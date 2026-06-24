@@ -56,24 +56,40 @@ tailwind.config = {
 <body class="min-h-screen text-warm antialiased">
 
 <!-- HERO / LANDING -->
-<div id="hero" class="min-h-screen flex items-center justify-center px-4">
-  <div class="max-w-2xl text-center fade-in">
-    <div class="inline-flex items-center gap-2 bg-copper/10 border border-copper/30 rounded-full px-4 py-1.5 mb-8">
-      <span class="w-2 h-2 bg-copper rounded-full animate-pulse"></span>
-      <span class="text-copper text-sm font-medium tracking-wide">FREE 2-MINUTE AUDIT</span>
-    </div>
-    <h1 class="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-[1.1] mb-6">
-      What is your tech stack<br/>
-      <span class="text-copper">really costing you?</span>
+<div id="hero" class="min-h-screen flex items-center justify-center px-4 py-16">
+  <div class="max-w-3xl text-center fade-in">
+    <p class="mb-6 text-xs font-semibold uppercase tracking-[0.18em] text-copper">RIA Tech-Stack & Profitability Audit</p>
+    <h1 class="text-4xl sm:text-5xl md:text-[clamp(2.2rem,5.5vw,3.4rem)] font-extrabold tracking-tight leading-[1.06] mb-5">
+      Find out what your tech stack<br/>
+      is <span class="text-copper">really costing you.</span>
     </h1>
-    <p class="text-lg sm:text-xl text-gray-400 mb-10 max-w-lg mx-auto leading-relaxed">
-      10 questions. No fluff. Get your personalized savings estimate and efficiency grade in under 2 minutes.
+    <p class="mx-auto text-lg leading-relaxed text-gray-400 max-w-xl mb-8">
+      Ten questions. A McKinsey-grade read on the dollars, hours, and risk hiding in your stack &mdash; and what one login would change.
     </p>
-    <button onclick="startAudit()" class="group inline-flex items-center gap-3 bg-copper hover:bg-copper-dark text-command font-bold text-lg px-8 py-4 rounded-xl transition-all duration-200 pulse-copper">
-      Start Your Audit
+    <button onclick="startAudit()" class="group inline-flex items-center gap-3 bg-copper hover:bg-copper-dark text-command font-bold text-lg px-8 py-4 rounded-xl transition-all duration-200 pulse-copper shadow-lg shadow-copper/20">
+      Start the audit
       <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
     </button>
-    <p class="text-gray-500 text-sm mt-4">No email required. Instant results.</p>
+    <p class="text-gray-500 text-sm mt-3">90 seconds &middot; see your score before sharing any contact info</p>
+
+    <!-- 3-step preview -->
+    <div class="mt-14 grid gap-4 text-left sm:grid-cols-3">
+      <div class="rounded-2xl border border-gray-800 bg-card p-6 shadow-lg">
+        <div class="mb-2 text-sm font-extrabold text-copper">01</div>
+        <div class="mb-1 font-bold text-warm">Your annual leak</div>
+        <div class="text-sm leading-relaxed text-gray-400">The fees and hours your stack quietly burns.</div>
+      </div>
+      <div class="rounded-2xl border border-gray-800 bg-card p-6 shadow-lg">
+        <div class="mb-2 text-sm font-extrabold text-copper">02</div>
+        <div class="mb-1 font-bold text-warm">Your tech drag score</div>
+        <div class="text-sm leading-relaxed text-gray-400">A single number, benchmarked against a lean stack.</div>
+      </div>
+      <div class="rounded-2xl border border-gray-800 bg-card p-6 shadow-lg">
+        <div class="mb-2 text-sm font-extrabold text-copper">03</div>
+        <div class="mb-1 font-bold text-warm">Your fix list</div>
+        <div class="text-sm leading-relaxed text-gray-400">Exactly what UX Wealth collapses and upgrades.</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -104,9 +120,8 @@ tailwind.config = {
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
         Back
       </button>
-      <button id="btnNext" onclick="nextQ()" class="bg-copper hover:bg-copper-dark text-command font-bold px-6 py-3 rounded-xl transition-all duration-200 flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed" disabled>
-        Next
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      <button id="btnNext" onclick="nextQ()" class="bg-copper hover:bg-copper-dark text-command font-bold px-7 py-3 rounded-xl shadow-lg shadow-copper/20 transition-all duration-200 flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+        <span id="btnNextText">Next &rarr;</span>
       </button>
     </div>
   </div>
@@ -272,7 +287,7 @@ function renderQ(){
   $('qTitle').textContent = q.q;
   $('qHint').textContent = q.hint||'';
   $('btnBack').style.visibility = step===0?'hidden':'visible';
-  $('btnNext').textContent = step===QUESTIONS.length-1?'See Results':'Next';
+  $('btnNextText').innerHTML = step===QUESTIONS.length-1?'See my results &rarr;':'Next &rarr;';
 
   const body = $('qBody');
   body.innerHTML = '';

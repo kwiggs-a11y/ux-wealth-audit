@@ -459,7 +459,7 @@ function showResults(){
   const rows = [
     { label:'Your current cost', value:`${bps} bps`, note:`On ${fmt$(aum)} AUM = ${fmtComma(bps/10000*aum)}/yr` },
     { label:'UX Wealth all-in cost', value:`~${uxBps} bps`, note:`${fmtComma(uxBps/10000*aum)}/yr — trading, billing, reporting, models, AI, support` },
-    { label:'Fee delta', value:`${Math.max(0,bps-uxBps)} bps`, note:feeSavings>0?`${fmtComma(feeSavings)} saved annually`:'You're already competitive on fees' },
+    { label:'Fee delta', value:`${Math.max(0,bps-uxBps)} bps`, note:feeSavings>0?`${fmtComma(feeSavings)} saved annually`:'You are already competitive on fees' },
     { label:'Ops time recovered', value:`${Math.round(hours*OPS_REDUCTION)} hrs/week`, note:`${Math.round(hours*OPS_REDUCTION*52)} hours/year × $${HOURLY}/hr = ${fmtComma(timeSavings)}` },
     { label:'Vendor consolidation', value:`${vendors} → 1`, note:`${vendors-1} redundant vendors × $${VENDOR_REDUNDANCY}/yr = ${fmtComma(vendorSavings)}` },
   ];
@@ -478,7 +478,7 @@ function showResults(){
 
   if(bps > 60) insights.push({ icon:'💰', text:`At ${bps} bps, you're paying ${Math.round((bps/45-1)*100)}% more than the industry median. UX Wealth's all-in pricing starts at ${UX_BPS_LOW} bps for larger firms.` });
   if(vendors >= 5) insights.push({ icon:'🔧', text:`${vendors} vendors means ${vendors} logins, ${vendors} invoices, and ${vendors} support queues. One platform eliminates the integration tax.` });
-  if(!hasAI) insights.push({ icon:'🤖', text:`You're running without AI tools — that's the single biggest efficiency gap in wealth management right now. UX Wealth includes AI-powered content, client comms, and portfolio intelligence at no extra cost.` });
+  if(!hasAI) insights.push({ icon:'🤖', text:`You are running without AI tools — that is the single biggest efficiency gap in wealth management right now. UX Wealth includes AI-powered content, client comms, and portfolio intelligence at no extra cost.` });
   if(hours >= 10) insights.push({ icon:'⏱️', text:`${hours} hours/week on ops is ${Math.round(hours*52)} hours/year — that's ${Math.round(hours*52/8)} full working days buried in back-office work instead of client-facing time.` });
   if(reviewTime >= 6) insights.push({ icon:'📊', text:`${reviewTime >= 10 ? '4+' : '2–4'} hours per review is heavy. Automated reporting and AI-generated review decks cut this to under 30 minutes.` });
   if(answers.pain && answers.pain.includes('Compliance overhead')) insights.push({ icon:'📋', text:`Compliance overhead is a universal pain point. UX Wealth includes built-in compliance workflows, audit trails, and regulatory calendar management.` });

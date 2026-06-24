@@ -130,24 +130,33 @@ tailwind.config = {
 <!-- RESULTS -->
 <div id="results" class="hidden min-h-screen px-4 py-16">
   <div class="max-w-4xl mx-auto">
-    <!-- Grade -->
-    <div class="text-center mb-12 fade-in">
-      <p class="text-copper text-sm font-medium tracking-widest uppercase mb-4">Your Practice Audit Results</p>
-      <div class="flex justify-center mb-6">
-        <div class="grade-ring">
-          <svg width="140" height="140" viewBox="0 0 140 140">
-            <circle cx="70" cy="70" r="60" fill="none" stroke="#1F2937" stroke-width="8"/>
-            <circle id="gradeArc" cx="70" cy="70" r="60" fill="none" stroke="#C4835A" stroke-width="8" stroke-linecap="round"
-              stroke-dasharray="377" stroke-dashoffset="377" style="transition: stroke-dashoffset 1.5s ease-out"/>
+    <!-- Header -->
+    <div class="text-center mb-8 fade-in">
+      <p class="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-copper">Your audit &middot; complete</p>
+      <h1 class="text-[clamp(2rem,5vw,3rem)] font-extrabold tracking-tight">Here&apos;s what your stack is costing you.</h1>
+    </div>
+
+    <!-- Score Ring + Annual Loss -->
+    <div class="grid gap-4 md:grid-cols-2 mb-4">
+      <div class="flex flex-col items-center justify-center rounded-2xl border border-gray-800 bg-card p-7 shadow-lg">
+        <div class="relative grade-ring" style="width:180px;height:180px">
+          <svg width="180" height="180" viewBox="0 0 180 180" class="-rotate-90">
+            <circle cx="90" cy="90" r="70" fill="none" stroke="#1F2937" stroke-width="14"/>
+            <circle id="gradeArc" cx="90" cy="90" r="70" fill="none" stroke="#C4835A" stroke-width="14" stroke-linecap="round"
+              stroke-dasharray="440" stroke-dashoffset="440" style="transition: stroke-dashoffset 1.1s cubic-bezier(.22,1,.36,1)"/>
           </svg>
           <div class="absolute inset-0 flex flex-col items-center justify-center">
-            <span id="gradeLabel" class="text-4xl font-black text-copper"></span>
-            <span class="text-xs text-gray-400 mt-1">DRAG SCORE</span>
+            <span id="gradeLabel" class="text-5xl font-black text-copper"></span>
+            <span id="gradeBand" class="text-xs text-gray-400 mt-1 font-semibold"></span>
           </div>
         </div>
+        <p class="mt-4 text-sm text-gray-400">Tech drag score &mdash; lower is leaner</p>
       </div>
-      <h2 id="headlineResult" class="text-3xl sm:text-4xl font-black mb-3"></h2>
-      <p id="subResult" class="text-gray-400 text-lg max-w-lg mx-auto"></p>
+      <div class="flex flex-col items-center justify-center rounded-2xl border border-copper/30 bg-gradient-to-br from-copper/10 to-copper/5 p-7 shadow-lg">
+        <p class="text-copper text-xs font-semibold tracking-widest uppercase mb-2">Estimated Annual Leak</p>
+        <p id="savTotal" class="text-5xl sm:text-6xl font-black text-warm font-mono"></p>
+        <p id="subResult" class="text-gray-400 text-sm mt-3 text-center max-w-xs"></p>
+      </div>
     </div>
 
     <!-- Savings Cards -->
@@ -181,23 +190,50 @@ tailwind.config = {
       <div id="breakdown" class="space-y-4 text-sm text-gray-300"></div>
     </div>
 
-    <!-- Insights -->
-    <div id="insightsSection" class="result-card bg-card border border-gray-800 rounded-2xl p-8 mb-10">
-      <h3 class="text-xl font-bold mb-6">Key Insights</h3>
-      <div id="insights" class="space-y-4"></div>
+    <!-- What UX Wealth fixes -->
+    <div class="result-card bg-card border border-gray-800 rounded-2xl p-7 mb-4">
+      <h3 class="text-lg font-bold mb-5">What UX Wealth fixes for you</h3>
+      <div id="fixesList" class="grid gap-3 sm:grid-cols-2"></div>
+    </div>
+
+    <!-- Additional insights -->
+    <div id="insightsSection" class="result-card bg-card border border-gray-800 rounded-2xl p-7 mb-4">
+      <h3 class="text-lg font-bold mb-5">Additional Context</h3>
+      <div id="insights" class="space-y-3"></div>
+    </div>
+
+    <!-- Lead Capture -->
+    <div id="leadSection" class="result-card rounded-2xl border border-gray-800 bg-card p-7 mb-4">
+      <h3 class="text-lg font-bold mb-1">Get your full report</h3>
+      <p class="text-sm text-gray-400 mb-5">We will email you a detailed breakdown with actionable next steps.</p>
+      <div id="leadForm" class="flex flex-col sm:flex-row gap-3">
+        <input id="leadName" type="text" placeholder="Your name" class="flex-1 rounded-xl border border-gray-700 bg-command px-4 py-3 text-warm placeholder-gray-500 focus:border-copper focus:outline-none focus:ring-1 focus:ring-copper/40"/>
+        <input id="leadEmail" type="email" placeholder="you@firm.com" class="flex-1 rounded-xl border border-gray-700 bg-command px-4 py-3 text-warm placeholder-gray-500 focus:border-copper focus:outline-none focus:ring-1 focus:ring-copper/40"/>
+        <button onclick="submitLead()" class="rounded-xl bg-copper hover:bg-copper-dark text-command font-bold px-6 py-3 transition-all whitespace-nowrap">Send my report</button>
+      </div>
+      <div id="leadSent" class="hidden text-center py-4">
+        <p class="text-copper font-semibold">Sent! Check your inbox.</p>
+      </div>
     </div>
 
     <!-- CTA -->
-    <div class="text-center mt-12 fade-in">
-      <h3 class="text-2xl font-bold mb-3">Ready to see it in action?</h3>
-      <p class="text-gray-400 mb-6 max-w-md mx-auto">Book a 20-minute intro call. We'll walk through your numbers live and show you exactly what UX Wealth looks like for a firm your size.</p>
-      <a href="https://riskdna.cal.com/ux-wealth-intro-call" target="_blank" rel="noopener"
-         class="inline-flex items-center gap-3 bg-copper hover:bg-copper-dark text-command font-bold text-lg px-8 py-4 rounded-xl transition-all duration-200 pulse-copper">
-        Book Your Intro Call
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-      </a>
-      <p class="text-gray-500 text-xs mt-4">Or email <a href="mailto:kwiggs@uxwp.com" class="text-copper hover:underline">kwiggs@uxwp.com</a></p>
-    </div>
+    <div class="result-card rounded-2xl border border-gray-800 bg-card-hover/40 p-7 text-center">
+      <h3 class="text-xl font-bold mb-1">Ready to stop the leak?</h3>
+      <p class="text-sm text-gray-400 mb-6">Pick the next step that fits &mdash; no pressure, no daisy chain.</p>
+      <div class="flex flex-col sm:flex-row justify-center gap-3">
+        <a href="https://riskdna.cal.com/ux-wealth-intro-call" target="_blank" rel="noopener"
+           class="rounded-xl bg-copper hover:bg-copper-dark text-command font-bold px-6 py-3.5 transition-all shadow-lg shadow-copper/20">
+          Book Migration Strategy Call
+        </a>
+        <a href="https://uxwp.com/demo" target="_blank" rel="noopener"
+           class="rounded-xl border border-copper/40 bg-copper/5 text-warm font-semibold px-6 py-3.5 hover:bg-copper/10 transition-all">
+          Start 14-Day Shadow Test
+        </a>
+        <a href="https://uxwp.com/partners" target="_blank" rel="noopener"
+           class="rounded-xl border border-gray-700 text-warm font-semibold px-6 py-3.5 hover:border-copper/50 hover:bg-white/5 transition-all">
+          See Private Label Option
+        </a>
+      </div>
 
     <!-- Restart -->
     <div class="text-center mt-8">
@@ -261,6 +297,26 @@ function startAudit(){
   $('hero').classList.add('hidden');
   $('quiz').classList.remove('hidden');
   renderQ();
+}
+
+function submitLead(){
+  const email = $('leadEmail').value;
+  const name = $('leadName').value;
+  if(!email) return;
+  const r = compute(answers);
+  const params = new URLSearchParams(window.location.search);
+  // Post to API endpoint when available
+  fetch('/api/audit-lead', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      email, name, score:r.score, annualLoss:r.annualLoss,
+      ctaSelected:'report',
+      utm:{source:params.get('utm_source'),medium:params.get('utm_medium'),campaign:params.get('utm_campaign')}
+    })
+  }).catch(()=>{});
+  $('leadForm').classList.add('hidden');
+  $('leadSent').classList.remove('hidden');
 }
 
 function restart(){
@@ -443,31 +499,31 @@ function showResults(){
   const {score,annualLoss,feeSavings,timeSavings,vendorSavings,band,bps,aum,vendors,hours,review:reviewTime,noAI}=r;
 
   // Grade — score is a DRAG score (higher = more inefficiency)
-  let grade, gradeColor;
-  if(score>=80){ grade='High'; gradeColor='#EF4444'; }
-  else if(score>=60){ grade='Elevated'; gradeColor='#F59E0B'; }
-  else if(score>=40){ grade='Moderate'; gradeColor='#C4835A'; }
-  else { grade='Lean'; gradeColor='#22C55E'; }
+  let gradeColor;
+  if(score>=80) gradeColor='#EF4444';
+  else if(score>=60) gradeColor='#F59E0B';
+  else if(score>=40) gradeColor='#C4835A';
+  else gradeColor='#22C55E';
 
-  // Animate grade ring
+  // Animate grade ring (C = 2πr = 2π×70 ≈ 440)
+  const C = 2 * Math.PI * 70;
   const arc = $('gradeArc');
+  arc.setAttribute('stroke-dasharray', C);
   arc.style.stroke = gradeColor;
   setTimeout(()=>{
-    arc.style.strokeDashoffset = 377 - (377 * score / 100);
+    arc.style.strokeDashoffset = C * (1 - score / 100);
   }, 200);
-  $('gradeLabel').textContent = grade;
+  $('gradeLabel').textContent = score;
   $('gradeLabel').style.color = gradeColor;
+  $('gradeBand').textContent = band;
 
-  // Headline
+  // Sub-result text
   if(annualLoss > 100000){
-    $('headlineResult').innerHTML = `You could save <span class="text-copper">${fmtComma(annualLoss)}</span> per year.`;
-    $('subResult').textContent = `Drag score: ${band}. That is real money sitting on the table.`;
+    $('subResult').textContent = `${band} drag. That is real money sitting on the table.`;
   } else if(annualLoss > 30000){
-    $('headlineResult').innerHTML = `<span class="text-copper">${fmtComma(annualLoss)}</span> in annual savings identified.`;
-    $('subResult').textContent = `Drag score: ${band}. Meaningful savings plus serious efficiency gains.`;
+    $('subResult').textContent = `${band} drag. Meaningful savings plus serious efficiency gains.`;
   } else {
-    $('headlineResult').innerHTML = `Your practice is running tight.`;
-    $('subResult').textContent = `Drag score: ${band}. We still found ${fmtComma(annualLoss)} in potential savings.`;
+    $('subResult').textContent = `${band} drag. Your practice is running tight — mostly ops efficiency and AI upside.`;
   }
 
   // Cards
@@ -499,10 +555,14 @@ function showResults(){
   ins.innerHTML = '';
   const insights = [];
 
-  // Use the fixes() function for actionable recommendations
-  const fixList = fixes(r);
-  fixList.forEach(f=>{
-    insights.push({ icon:'✅', text:f });
+  // Render fixes in the dedicated section
+  const fixesEl = $('fixesList');
+  fixesEl.innerHTML = '';
+  fixes(r).forEach(f=>{
+    const div = document.createElement('div');
+    div.className = 'flex items-start gap-3';
+    div.innerHTML = `<span class="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-copper/15 text-xs text-copper">✓</span><span class="text-sm leading-relaxed text-gray-300">${f}</span>`;
+    fixesEl.appendChild(div);
   });
 
   // Additional contextual insights

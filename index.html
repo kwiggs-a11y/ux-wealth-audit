@@ -127,7 +127,7 @@ tailwind.config = {
           </svg>
           <div class="absolute inset-0 flex flex-col items-center justify-center">
             <span id="gradeLabel" class="text-4xl font-black text-copper"></span>
-            <span class="text-xs text-gray-400 mt-1">EFFICIENCY</span>
+            <span class="text-xs text-gray-400 mt-1">DRAG SCORE</span>
           </div>
         </div>
       </div>
@@ -383,48 +383,56 @@ function checkNext(){
 }
 
 /* ============= RESULTS ENGINE ============= */
+function compute(a){
+  const aum=a.aum??37.5e6, vendors=a.vendors??5, bps=a.bps??60, hours=a.hours??8, review=a.review??3;
+  const noAI=a.ai===false, pain=a.pain??[];
+  const feeSavings=(Math.max(0,bps-UX_BPS_HIGH)/10000)*aum;
+  const hoursSavedYr=hours*50*OPS_REDUCTION;
+  const annualLoss=Math.round(feeSavings+hoursSavedYr*HOURLY+Math.max(0,vendors-1)*VENDOR_REDUNDANCY);
+  const score=Math.min(100,Math.round(
+    (Math.min(vendors,8)/8)*25+(Math.min(hours,30)/30)*25+
+    (Math.min(Math.max(bps-UX_BPS_HIGH,0),40)/40)*25+(noAI?15:0)+review));
+  const currentCost=Math.round((bps/10000)*aum);
+  return {
+    annualLoss, hoursSavedYr:Math.round(hoursSavedYr), score, currentCost,
+    uxCostLow:Math.round((UX_BPS_LOW/10000)*aum), uxCostHigh:Math.round((UX_BPS_HIGH/10000)*aum),
+    band:score>=80?'High drag':score>=60?'Elevated':score>=40?'Moderate':'Lean',
+    noAI, review, pl:a.pl??3, shadow:a.shadow, pain, bps, aum, vendors, hours,
+    feeSavings:Math.round(feeSavings), timeSavings:Math.round(hoursSavedYr*HOURLY),
+    vendorSavings:Math.round(Math.max(0,vendors-1)*VENDOR_REDUNDANCY)
+  };
+}
+function fixes(r){
+  const l=['One login replaces your entire daisy chain'];
+  if(r.noAI) l.push('AI Upgrade — content & client comms built in');
+  if(r.review>=6||r.pain.includes('Billing & reporting time')) l.push('Automated billing & reporting');
+  if(r.currentCost>r.uxCostHigh) l.push('Value-first pricing — as low as industry-low single digits with your own models');
+  if(r.review>=6) l.push('Review prep cut with one-click client packets');
+  if(r.pl>=4) l.push('Private-label deployment for your network');
+  l.push('Schwab-verified · SEC-registered platform');
+  return l;
+}
+function trackAuditComplete(r){
+  const w=window;
+  if(w.gtag) w.gtag('event','audit_completed',{score:r.score,annual_loss:r.annualLoss});
+  if(w.fbq) w.fbq('trackCustom','AuditCompleted',{score:r.score});
+}
+
 function showResults(){
   $('quiz').classList.add('hidden');
   $('results').classList.remove('hidden');
   window.scrollTo({top:0,behavior:'smooth'});
 
-  const aum = answers.aum || 37.5e6;
-  const bps = answers.bps || 60;
-  const hours = answers.hours || 8;
-  const vendors = answers.vendors || 5;
-  const hasAI = answers.ai === true;
-  const reviewTime = answers.review || 3;
+  const r = compute(answers);
+  trackAuditComplete(r);
+  const {score,annualLoss,feeSavings,timeSavings,vendorSavings,band,bps,aum,vendors,hours,review:reviewTime,noAI}=r;
 
-  // UX bps is AUM-tiered
-  let uxBps;
-  if(aum<=25e6) uxBps = 45;
-  else if(aum<=50e6) uxBps = 40;
-  else if(aum<=100e6) uxBps = 35;
-  else if(aum<=150e6) uxBps = 25;
-  else uxBps = UX_BPS_LOW;
-
-  // Savings
-  const feeSavings = Math.max(0, (bps - uxBps) / 10000 * aum);
-  const timeSavings = hours * OPS_REDUCTION * HOURLY * 52;
-  const vendorSavings = Math.max(0, (vendors - 1)) * VENDOR_REDUNDANCY;
-  const totalSavings = feeSavings + timeSavings + vendorSavings;
-
-  // Grade
-  let score = 100;
-  if(bps > 50) score -= Math.min(30, (bps-50)*0.8);
-  if(vendors > 3) score -= (vendors-3)*5;
-  if(hours > 5) score -= Math.min(20, (hours-5)*3);
-  if(!hasAI) score -= 10;
-  if(reviewTime > 3) score -= 8;
-  score = Math.max(15, Math.min(100, Math.round(score)));
-
+  // Grade — score is a DRAG score (higher = more inefficiency)
   let grade, gradeColor;
-  if(score>=90){ grade='A'; gradeColor='#22C55E'; }
-  else if(score>=75){ grade='B+'; gradeColor='#84CC16'; }
-  else if(score>=60){ grade='B'; gradeColor='#C4835A'; }
-  else if(score>=45){ grade='C'; gradeColor='#F59E0B'; }
-  else if(score>=30){ grade='D'; gradeColor='#EF4444'; }
-  else { grade='F'; gradeColor='#DC2626'; }
+  if(score>=80){ grade='High'; gradeColor='#EF4444'; }
+  else if(score>=60){ grade='Elevated'; gradeColor='#F59E0B'; }
+  else if(score>=40){ grade='Moderate'; gradeColor='#C4835A'; }
+  else { grade='Lean'; gradeColor='#22C55E'; }
 
   // Animate grade ring
   const arc = $('gradeArc');
@@ -436,32 +444,32 @@ function showResults(){
   $('gradeLabel').style.color = gradeColor;
 
   // Headline
-  if(totalSavings > 100000){
-    $('headlineResult').innerHTML = `You could save <span class="text-copper">${fmtComma(totalSavings)}</span> per year.`;
-    $('subResult').textContent = "That's real money sitting on the table. Here's the breakdown.";
-  } else if(totalSavings > 30000){
-    $('headlineResult').innerHTML = `<span class="text-copper">${fmtComma(totalSavings)}</span> in annual savings identified.`;
-    $('subResult').textContent = "Meaningful savings plus serious efficiency gains. Let's dig in.";
+  if(annualLoss > 100000){
+    $('headlineResult').innerHTML = `You could save <span class="text-copper">${fmtComma(annualLoss)}</span> per year.`;
+    $('subResult').textContent = `Drag score: ${band}. That is real money sitting on the table.`;
+  } else if(annualLoss > 30000){
+    $('headlineResult').innerHTML = `<span class="text-copper">${fmtComma(annualLoss)}</span> in annual savings identified.`;
+    $('subResult').textContent = `Drag score: ${band}. Meaningful savings plus serious efficiency gains.`;
   } else {
     $('headlineResult').innerHTML = `Your practice is running tight.`;
-    $('subResult').textContent = `We still found ${fmtComma(totalSavings)} in potential savings — mostly in ops efficiency and AI tools you're missing.`;
+    $('subResult').textContent = `Drag score: ${band}. We still found ${fmtComma(annualLoss)} in potential savings.`;
   }
 
   // Cards
-  $('savFee').textContent = fmtComma(feeSavings);
-  $('savTime').textContent = fmtComma(timeSavings);
-  $('savVendor').textContent = fmtComma(vendorSavings);
-  $('savTotal').textContent = fmtComma(totalSavings);
+  $('savFee').textContent = fmtComma(r.feeSavings);
+  $('savTime').textContent = fmtComma(r.timeSavings);
+  $('savVendor').textContent = fmtComma(r.vendorSavings);
+  $('savTotal').textContent = fmtComma(annualLoss);
 
   // Breakdown
   const bd = $('breakdown');
   bd.innerHTML = '';
   const rows = [
-    { label:'Your current cost', value:`${bps} bps`, note:`On ${fmt$(aum)} AUM = ${fmtComma(bps/10000*aum)}/yr` },
-    { label:'UX Wealth all-in cost', value:`~${uxBps} bps`, note:`${fmtComma(uxBps/10000*aum)}/yr — trading, billing, reporting, models, AI, support` },
-    { label:'Fee delta', value:`${Math.max(0,bps-uxBps)} bps`, note:feeSavings>0?`${fmtComma(feeSavings)} saved annually`:'You are already competitive on fees' },
-    { label:'Ops time recovered', value:`${Math.round(hours*OPS_REDUCTION)} hrs/week`, note:`${Math.round(hours*OPS_REDUCTION*52)} hours/year × $${HOURLY}/hr = ${fmtComma(timeSavings)}` },
-    { label:'Vendor consolidation', value:`${vendors} → 1`, note:`${vendors-1} redundant vendors × $${VENDOR_REDUNDANCY}/yr = ${fmtComma(vendorSavings)}` },
+    { label:'Your current cost', value:`${bps} bps`, note:`On ${fmt$(aum)} AUM = ${fmtComma(r.currentCost)}/yr` },
+    { label:'UX Wealth range', value:`${UX_BPS_LOW}–${UX_BPS_HIGH} bps`, note:`${fmtComma(r.uxCostLow)}–${fmtComma(r.uxCostHigh)}/yr — trading, billing, reporting, models, AI, support` },
+    { label:'Fee delta (conservative)', value:`${Math.max(0,bps-UX_BPS_HIGH)} bps`, note:r.feeSavings>0?`${fmtComma(r.feeSavings)} saved annually vs high end`:'You are already competitive on fees' },
+    { label:'Ops time recovered', value:`${r.hoursSavedYr} hrs/yr`, note:`${hours} hrs/week × 50 weeks × ${Math.round(OPS_REDUCTION*100)}% reduction × $${HOURLY}/hr = ${fmtComma(r.timeSavings)}` },
+    { label:'Vendor consolidation', value:`${vendors} → 1`, note:`${Math.max(0,vendors-1)} redundant vendors × $${VENDOR_REDUNDANCY}/yr = ${fmtComma(r.vendorSavings)}` },
   ];
   rows.forEach(r=>{
     const row = document.createElement('div');
@@ -476,16 +484,18 @@ function showResults(){
   ins.innerHTML = '';
   const insights = [];
 
-  if(bps > 60) insights.push({ icon:'💰', text:`At ${bps} bps, you're paying ${Math.round((bps/45-1)*100)}% more than the industry median. UX Wealth's all-in pricing starts at ${UX_BPS_LOW} bps for larger firms.` });
-  if(vendors >= 5) insights.push({ icon:'🔧', text:`${vendors} vendors means ${vendors} logins, ${vendors} invoices, and ${vendors} support queues. One platform eliminates the integration tax.` });
-  if(!hasAI) insights.push({ icon:'🤖', text:`You are running without AI tools — that is the single biggest efficiency gap in wealth management right now. UX Wealth includes AI-powered content, client comms, and portfolio intelligence at no extra cost.` });
-  if(hours >= 10) insights.push({ icon:'⏱️', text:`${hours} hours/week on ops is ${Math.round(hours*52)} hours/year — that's ${Math.round(hours*52/8)} full working days buried in back-office work instead of client-facing time.` });
-  if(reviewTime >= 6) insights.push({ icon:'📊', text:`${reviewTime >= 10 ? '4+' : '2–4'} hours per review is heavy. Automated reporting and AI-generated review decks cut this to under 30 minutes.` });
-  if(answers.pain && answers.pain.includes('Compliance overhead')) insights.push({ icon:'📋', text:`Compliance overhead is a universal pain point. UX Wealth includes built-in compliance workflows, audit trails, and regulatory calendar management.` });
-  if(answers.shadow === true) insights.push({ icon:'🔬', text:`You opted into the 14-day shadow test — smart move. Zero risk, full visibility into what UX Wealth looks like running alongside your current book.` });
-  if(answers.pl >= 4) insights.push({ icon:'🏗️', text:`High interest in private-label — UX Wealth offers full white-label TAMP capabilities for firms building their own advisor networks.` });
+  // Use the fixes() function for actionable recommendations
+  const fixList = fixes(r);
+  fixList.forEach(f=>{
+    insights.push({ icon:'✅', text:f });
+  });
 
-  if(insights.length === 0) insights.push({ icon:'✅', text:'Your practice is well-optimized. The biggest remaining opportunity is AI-powered efficiency tools and a fully integrated single-platform experience.' });
+  // Additional contextual insights
+  if(bps > 60) insights.push({ icon:'💰', text:`At ${bps} bps, you are paying ${Math.round((bps/45-1)*100)}% more than the industry median. UX Wealth pricing starts at ${UX_BPS_LOW} bps for larger firms.` });
+  if(vendors >= 5) insights.push({ icon:'🔧', text:`${vendors} vendors means ${vendors} logins, ${vendors} invoices, and ${vendors} support queues. One platform eliminates the integration tax.` });
+  if(noAI) insights.push({ icon:'🤖', text:`Running without AI tools is the single biggest efficiency gap in wealth management right now. UX Wealth includes AI-powered content, client comms, and portfolio intelligence at no extra cost.` });
+  if(hours >= 10) insights.push({ icon:'⏱️', text:`${hours} hours/week on ops is ${Math.round(hours*50)} hours/year buried in back-office work instead of client-facing time.` });
+  if(answers.shadow === true) insights.push({ icon:'🔬', text:`You opted into the 14-day shadow test — smart move. Zero risk, full visibility into what UX Wealth looks like running alongside your current book.` });
 
   insights.forEach(i=>{
     const div = document.createElement('div');
